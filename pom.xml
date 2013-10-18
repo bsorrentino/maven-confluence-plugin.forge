@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bsc</groupId>
   <artifactId>confluence-forge-plugin</artifactId>
-  <name>Confluence::Forge plugin - ${project.version}</name>
   <version>1.0-SNAPSHOT</version>
+  <name>Confluence::Forge plugin - ${project.version}</name>
   <properties>
     <forge.api.version>1.4.0.Final</forge.api.version>
   </properties>
@@ -65,26 +65,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.bsc.util</groupId>
+      <artifactId>minitemplator-repackaged</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-maven-api</artifactId>
       <version>1.4.1.Final</version>
-      <type>jar</type>
+      <scope>provided</scope>
     </dependency>
-  
-   <!--
-   ==========================================
-
-   ==========================================
-   -->
-    <dependency>
-        <groupId>org.bsc.util</groupId>
-        <artifactId>minitemplator-repackaged</artifactId>
-        <version>1.0</version>
-    </dependency>
-    
   </dependencies>
-  
-  
   <repositories>
     <repository>
       <id>JBOSS_NEXUS</id>
