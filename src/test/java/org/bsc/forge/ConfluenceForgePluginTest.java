@@ -75,7 +75,7 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
       queueInputLines("y");
       queueInputCfg("myServerId", "http://localhost:8080/", "mySpaceKey", "");
       
-      getShell().execute("confluence setup");
+      getShell().execute("confluence-reporting setup");
 
       Assert.assertTrue(getOutput().contains(ConfluenceForgePlugin.MESG_FOLDER_CREATED));
 
@@ -109,7 +109,7 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
       resetInputQueue();
       queueInputLines( "n", "confluenceSite", "y");
       queueInputCfg("myServerId", "", "mySpaceKey", "");
-      getShell().execute("confluence setup");
+      getShell().execute("confluence-reporting setup");
 
       
       Assert.assertTrue(getOutput().contains(ConfluenceForgePlugin.MESG_FOLDER_CREATED));
@@ -128,7 +128,7 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
       
       resetInputQueue();
       queueInputLines( "n", "", "y");
-      getShell().execute("confluence setup");
+      getShell().execute("confluence-reporting setup");
 
       
       Assert.assertTrue(getOutput().contains(ConfluenceForgePlugin.MSG_SETUP_INTERRUPTED));

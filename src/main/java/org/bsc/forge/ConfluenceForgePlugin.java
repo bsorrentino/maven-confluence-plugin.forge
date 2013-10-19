@@ -1,22 +1,22 @@
 package org.bsc.forge;
 
+import static org.bsc.forge.MavenUtil.setMavenProjectProperty;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
+
 import org.apache.maven.project.MavenProject;
 import org.bsc.forge.MavenUtil.F;
-import static org.bsc.forge.MavenUtil.addMavenProjectProperty;
 import org.codehaus.plexus.util.IOUtil;
-
-import org.jboss.forge.shell.plugins.Alias;
-import org.jboss.forge.shell.plugins.PipeOut;
-import org.jboss.forge.shell.plugins.Plugin;
-import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.maven.MavenCoreFacet;
 import org.jboss.forge.maven.MavenPluginFacet;
 import org.jboss.forge.maven.plugins.ConfigurationBuilder;
+import org.jboss.forge.maven.plugins.ConfigurationElement;
+import org.jboss.forge.maven.plugins.MavenPlugin;
 import org.jboss.forge.maven.plugins.MavenPluginBuilder;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
@@ -24,13 +24,17 @@ import org.jboss.forge.project.services.ResourceFactory;
 import org.jboss.forge.shell.Shell;
 import org.jboss.forge.shell.ShellColor;
 import org.jboss.forge.shell.exceptions.AbortedException;
+import org.jboss.forge.shell.plugins.Alias;
+import org.jboss.forge.shell.plugins.PipeOut;
+import org.jboss.forge.shell.plugins.Plugin;
+import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.plugins.RequiresProject;
 import org.jboss.forge.shell.plugins.SetupCommand;
 
 /**
  *
  */
-@Alias("confluence")
+@Alias("confluence-reporting")
 @RequiresFacet({MavenCoreFacet.class, MavenPluginFacet.class})
 @RequiresProject
 public class ConfluenceForgePlugin implements Plugin {
@@ -130,13 +134,13 @@ public class ConfluenceForgePlugin implements Plugin {
 
     private void createConfluenceMavenPlugin(final MavenProject mProject) {
 
-        final org.apache.maven.model.Plugin plugin = mProject.getPlugin(PLUGIN_KEY_2);
-
-        if (plugin != null) {
-
-            prompt.println("Plugin already exist!");
-            return;
-        }
+//        final org.apache.maven.model.Plugin plugin = mProject.getPlugin(PLUGIN_KEY_2);
+//
+//        if (plugin != null) {
+//
+//            prompt.println("Plugin already exist!");
+//            return;
+//        }
 
         final DependencyBuilder confluencePluginDep
                 = DependencyBuilder.create(PLUGIN_KEY_3);
@@ -144,16 +148,20 @@ public class ConfluenceForgePlugin implements Plugin {
         final MavenPluginFacet pluginFacet
                 = project.getFacet(MavenPluginFacet.class);
 
+        final MavenPlugin _plugin;
+        
         if (pluginFacet.hasPlugin(confluencePluginDep)) {
 
-            prompt.println("Plugin already exist!");
-            return;
+            prompt.printlnVerbose("Plugin already exist!");
+            _plugin = pluginFacet.getPlugin(confluencePluginDep);
 
         }
+        else {
+        	_plugin = null;
+        }
 
-        {
             final MavenPluginBuilder pb
-                    = MavenPluginBuilder.create()
+                    =  MavenPluginBuilder.create() 
                       .setDependency(confluencePluginDep)  
                     ;
             final ConfigurationBuilder cb = pb.createConfiguration();
@@ -171,7 +179,7 @@ public class ConfluenceForgePlugin implements Plugin {
                                 param = param.substring(0, param.length()-1);
                             }
                             
-                            addMavenProjectProperty(project, "confluence.home", param );
+                            setMavenProjectProperty(project, "confluence.home", param );
 
                             return "${confluence.home}/rpc/xmlrpc";
                         }
@@ -192,9 +200,13 @@ public class ConfluenceForgePlugin implements Plugin {
             
             pb.setConfiguration(cb);
 
-            pluginFacet.addPlugin(pb);
+            if( _plugin == null ) {
+            	pluginFacet.addPlugin(pb);
+            }
+            else {
+            	pluginFacet.updatePlugin( pluginFacet.merge(pb, _plugin) );
+            }
             
-        }
     }
 
     private void printVerbose(Throwable t) {

@@ -80,4 +80,39 @@ public class MavenUtil {
         
         
     }
+    
+    /**
+     * add or update property 
+     * 
+     * @param project
+     * @param key
+     * @param value 
+     */
+    public static void setMavenProjectProperty( Project project, String key, String value ) 
+    {
+        final MavenCoreFacet mcf = project.getFacet(MavenCoreFacet.class);
+        
+        setMavenProjectProperty(mcf, key, value);
+     
+    }
+    
+    /**
+     * add or update property 
+     * 
+     * @param project
+     * @param key
+     * @param value 
+     */
+    private static void setMavenProjectProperty( MavenCoreFacet mcf, String key, String value ) 
+    {
+        final Model pom = mcf.getPOM();
+
+        java.util.Properties pp = pom.getProperties();
+
+        pp.setProperty(key, value);
+            
+        mcf.setPOM(pom);
+        
+    }
+    
 }
