@@ -1,8 +1,10 @@
 package org.bsc.forge;
 
+import static org.bsc.forge.ConfluenceForgePlugin.*;
+
 import java.io.IOException;
+
 import org.apache.maven.project.MavenProject;
-import static org.bsc.forge.ConfluenceForgePlugin.PLUGIN_KEY_3;
 import org.codehaus.plexus.util.FileUtils;
 import org.hamcrest.core.Is;
 import org.hamcrest.core.IsEqual;
@@ -10,6 +12,7 @@ import org.hamcrest.core.IsNull;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.maven.MavenCoreFacet;
 import org.jboss.forge.maven.MavenPluginFacet;
+import org.jboss.forge.maven.plugins.Configuration;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.packaging.PackagingType;
@@ -73,7 +76,7 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
   
       resetInputQueue();
       queueInputLines("y");
-      queueInputCfg("myServerId", "http://localhost:8080/", "mySpaceKey", "");
+      queueInputCfg("2", "http://localhost:8080/", "mySpaceKey", "");
       
       getShell().execute("confluence-reporting setup");
 
@@ -85,6 +88,29 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
       Assert.assertThat( pp.isEmpty(), Is.is(false));
       Assert.assertThat( pp.containsKey("confluence.home"), Is.is(true));
       Assert.assertThat( pp.getProperty("confluence.home"), IsEqual.equalTo("http://localhost:8080"));
+      
+      resetInputQueue();
+      queueInputCfg( "0", "http://localhost:9090/", "", "myParentPage");
+      
+      getShell().execute("confluence-reporting setup");
+      
+      Assert.assertTrue(getOutput().contains(ConfluenceForgePlugin.MESG_FOLDER_CREATED));
+  
+      final DependencyBuilder confluencePluginDep
+      			= DependencyBuilder.create(PLUGIN_KEY_3);
+      
+      final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
+      Assert.assertThat( pluginFacet, IsNull.notNullValue() );
+      
+      Assert.assertThat( pluginFacet.hasPlugin(confluencePluginDep), Is.is(true) );
+      
+      final Configuration pluginConfiguration = pluginFacet.getPlugin(confluencePluginDep).getConfig();
+      Assert.assertThat( pluginConfiguration, IsNull.notNullValue() );
+      
+      Assert.assertThat( pluginConfiguration.hasConfigurationElement(CFGELEM_ENDPOINT), Is.is(true) );
+      Assert.assertThat( mavenFacet.getPOM().getProperties().getProperty(PROP_CONFLUENCE_HOME), IsEqual.equalTo( "http://localhost:9090") );
+      Assert.assertThat( pluginConfiguration.hasConfigurationElement(CFGELEM_PARENTPAGETITLE), Is.is(true) );
+      Assert.assertThat( pluginConfiguration.getConfigurationElement(CFGELEM_PARENTPAGETITLE).getText(), IsEqual.equalTo( "myParentPage") );
       
       DirectoryResource basedir = project.getProjectRoot();
       
@@ -108,7 +134,7 @@ public class ConfluenceForgePluginTest extends AbstractShellTest
    {
       resetInputQueue();
       queueInputLines( "n", "confluenceSite", "y");
-      queueInputCfg("myServerId", "", "mySpaceKey", "");
+      queueInputCfg("1", "", "mySpaceKey", "");
       getShell().execute("confluence-reporting setup");
 
       

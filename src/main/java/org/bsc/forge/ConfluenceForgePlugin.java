@@ -1,6 +1,8 @@
 package org.bsc.forge;
 
-import static org.bsc.forge.MavenUtil.setMavenProjectProperty;
+import static org.bsc.forge.MavenHelper.getOrCreateConfigurationElement;
+import static org.bsc.forge.MavenHelper.getSettings;
+import static org.bsc.forge.MavenHelper.setMavenProjectProperty;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,20 +12,18 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import org.apache.maven.project.MavenProject;
-import org.bsc.forge.MavenUtil.F;
 import org.codehaus.plexus.util.IOUtil;
 import org.jboss.forge.maven.MavenCoreFacet;
 import org.jboss.forge.maven.MavenPluginFacet;
 import org.jboss.forge.maven.plugins.ConfigurationBuilder;
 import org.jboss.forge.maven.plugins.ConfigurationElement;
+import org.jboss.forge.maven.plugins.ConfigurationElementBuilder;
 import org.jboss.forge.maven.plugins.MavenPlugin;
 import org.jboss.forge.maven.plugins.MavenPluginBuilder;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
-import org.jboss.forge.project.services.ResourceFactory;
 import org.jboss.forge.shell.Shell;
 import org.jboss.forge.shell.ShellColor;
-import org.jboss.forge.shell.exceptions.AbortedException;
 import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.Plugin;
@@ -35,219 +35,255 @@ import org.jboss.forge.shell.plugins.SetupCommand;
  *
  */
 @Alias("confluence-reporting")
-@RequiresFacet({MavenCoreFacet.class, MavenPluginFacet.class})
+@RequiresFacet({ MavenCoreFacet.class, MavenPluginFacet.class })
 @RequiresProject
 public class ConfluenceForgePlugin implements Plugin {
 
-    public static final String MSG_SETUP_INTERRUPTED = "setup interrupted!";
-    public static final String MESG_FOLDER_CREATED = "folder created!";
+	public static final String PROP_CONFLUENCE_HOME = "confluence.home";
+	public static final String CFGELEM_SERVERID = "serverId";
+	public static final String CFGELEM_ENDPOINT = "endPoint";
+	public static final String CFGELEM_SPACEKEY = "spaceKey";
+	public static final String CFGELEM_PARENTPAGETITLE = "parentPageTitle";
+	public static final String MSG_SETUP_INTERRUPTED = "setup interrupted!";
+	public static final String MESG_FOLDER_CREATED = "folder created!";
 
-    public static final String PLUGIN_GROUPID = "org.bsc.maven";
-    public static final String PLUGIN_ARTIFACTID = "maven-confluence-reporting-plugin";
-    public static final String PLUGIN_VERSION = "3.4.2";
+	public static final String PLUGIN_GROUPID = "org.bsc.maven";
+	public static final String PLUGIN_ARTIFACTID = "maven-confluence-reporting-plugin";
+	public static final String PLUGIN_VERSION = "3.4.2";
 
-    public static final String PLUGIN_KEY_2 = PLUGIN_GROUPID + ":" + PLUGIN_ARTIFACTID;
-    public static final String PLUGIN_KEY_3 = PLUGIN_GROUPID + ":" + PLUGIN_ARTIFACTID + ":" + PLUGIN_VERSION;
+	public static final String PLUGIN_KEY_2 = PLUGIN_GROUPID + ":"
+			+ PLUGIN_ARTIFACTID;
+	public static final String PLUGIN_KEY_3 = PLUGIN_GROUPID + ":"
+			+ PLUGIN_ARTIFACTID + ":" + PLUGIN_VERSION;
 
-    @Inject
-    private Shell/*Prompt*/ prompt;
+	@Inject
+	private Shell/* Prompt */prompt;
 
-    @Inject
-    private Project project;
+	@Inject
+	private Project project;
 
-    @Inject
-    private ResourceFactory resourceFactory;
+	// @Inject
+	// private ResourceFactory resourceFactory;
 
-    @SetupCommand
-    public void setup(PipeOut out) {
+	@SetupCommand
+	public void setup(PipeOut out) {
 
-        final MavenCoreFacet facet = project.getFacet(MavenCoreFacet.class);
+		final MavenCoreFacet facet = project.getFacet(MavenCoreFacet.class);
 
-        final MavenProject mProject = facet.getMavenProject();
+		final MavenProject mProject = facet.getMavenProject();
 
-        final String siteDir = String.format("%s/src/site/confluence", project.getProjectRoot().getFullyQualifiedName());
+		final String siteDir = String.format("%s/src/site/confluence", project
+				.getProjectRoot().getFullyQualifiedName());
 
-        java.io.File siteDirFile = new java.io.File(siteDir);
+		java.io.File siteDirFile = new java.io.File(siteDir);
 
-       //final DirectoryResource root = project.getProjectRoot();
-        //final DirectoryResource siteDirRes = root.createFrom(siteDirFile);
-        while (!siteDirFile.exists()) {
+		// final DirectoryResource root = project.getProjectRoot();
+		// final DirectoryResource siteDirRes = root.createFrom(siteDirFile);
+		while (!siteDirFile.exists()) {
 
-            final boolean createFolder = prompt.promptBoolean(String.format("Do you want create missing folder [%s]: ", siteDirFile.getPath()), true);
+			final boolean createFolder = prompt.promptBoolean(String.format(
+					"Do you want create missing folder [%s]: ",
+					siteDirFile.getPath()), true);
 
-            if (createFolder) {
+			if (createFolder) {
 
-                final boolean success = siteDirFile.mkdirs();
+				final boolean success = siteDirFile.mkdirs();
 
-                if (success) {
-                    out.println(MESG_FOLDER_CREATED);
-                    break;
-                } else {
-                    out.println(ShellColor.RED, String.format("error creating folder [%s]!", siteDir));
-                    return;
-                }
-            } else {
+				if (success) {
+					out.println(MESG_FOLDER_CREATED);
+					break;
+				} else {
+					out.println(ShellColor.RED, String.format(
+							"error creating folder [%s]!", siteDir));
+					return;
+				}
+			} else {
 
-                final String newFolder = prompt.prompt("Please, give me the site folder relative to ${basedir}. press enter to abort: ");
+				final String newFolder = prompt
+						.prompt("Please, give me the site folder relative to ${basedir}. press enter to abort: ");
 
-                if (newFolder == null || newFolder.isEmpty()) {
-                    out.println(MSG_SETUP_INTERRUPTED);
-                    return;
-                }
-                siteDirFile = new java.io.File(mProject.getBasedir(), newFolder);
+				if (newFolder == null || newFolder.isEmpty()) {
+					out.println(MSG_SETUP_INTERRUPTED);
+					return;
+				}
+				siteDirFile = new java.io.File(mProject.getBasedir(), newFolder);
 
-            }
-        }
+			}
+		}
 
-       //DirectoryResource siteDirRes =  (DirectoryResource) resourceFactory.getResourceFrom(siteDirFile);
-        try {
-            final java.io.InputStream confluenceTemplatePage = getClass().getClassLoader().getResourceAsStream("template.confluence");
-            final java.io.Writer confluenceHomePage = new FileWriter(new java.io.File(siteDirFile, "home.confluence"));
+		// DirectoryResource siteDirRes = (DirectoryResource)
+		// resourceFactory.getResourceFrom(siteDirFile);
+		try {
+			final java.io.File f = new java.io.File(siteDirFile,
+					"home.confluence");
 
-            IOUtil.copy(confluenceTemplatePage, confluenceHomePage);
+			if (!f.exists()) {
 
-        } catch (IOException ex) {
+				final java.io.InputStream confluenceTemplatePage = getClass()
+						.getClassLoader().getResourceAsStream(
+								"template.confluence");
+				final java.io.Writer confluenceHomePage = new FileWriter(f);
 
-            out.println(ShellColor.RED, "error copying home page template ....! Set VERBOSE for details");
+				IOUtil.copy(confluenceTemplatePage, confluenceHomePage);
+			}
 
-            printVerbose(ex);
+		} catch (IOException ex) {
 
-            Logger.getLogger(ConfluenceForgePlugin.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            final java.io.InputStream siteTemplatePage = getClass().getClassLoader().getResourceAsStream("site.xml");
-            final java.io.Writer sitePage = new FileWriter(new java.io.File(siteDirFile, "site.xml"));
+			out.println(ShellColor.RED,
+					"error copying home page template ....! Set VERBOSE for details");
 
-            IOUtil.copy(siteTemplatePage, sitePage);
+			printVerbose(ex);
 
-        } catch (IOException ex) {
+			Logger.getLogger(ConfluenceForgePlugin.class.getName()).log(
+					Level.SEVERE, null, ex);
+		}
+		try {
+			final java.io.File f = new java.io.File(siteDirFile, "site.xml");
 
-            out.println(ShellColor.RED, "error copying site template ....! Set VERBOSE for details");
+			if (!f.exists()) {
+				final java.io.InputStream siteTemplatePage = getClass()
+						.getClassLoader().getResourceAsStream("site.xml");
+				final java.io.Writer sitePage = new FileWriter(f);
 
-            printVerbose(ex);
+				IOUtil.copy(siteTemplatePage, sitePage);
+			}
 
-            Logger.getLogger(ConfluenceForgePlugin.class.getName()).log(Level.SEVERE, null, ex);
-        }
+		} catch (IOException ex) {
 
-        createConfluenceMavenPlugin(mProject);
-    }
+			out.println(ShellColor.RED,
+					"error copying site template ....! Set VERBOSE for details");
 
-    private void createConfluenceMavenPlugin(final MavenProject mProject) {
+			printVerbose(ex);
 
-//        final org.apache.maven.model.Plugin plugin = mProject.getPlugin(PLUGIN_KEY_2);
-//
-//        if (plugin != null) {
-//
-//            prompt.println("Plugin already exist!");
-//            return;
-//        }
+			Logger.getLogger(ConfluenceForgePlugin.class.getName()).log(
+					Level.SEVERE, null, ex);
+		}
 
-        final DependencyBuilder confluencePluginDep
-                = DependencyBuilder.create(PLUGIN_KEY_3);
+		updateOrCreateConfluenceMavenPlugin(mProject);
+	}
 
-        final MavenPluginFacet pluginFacet
-                = project.getFacet(MavenPluginFacet.class);
+	private void updateOrCreateConfluenceMavenPlugin(final MavenProject mProject) {
 
-        final MavenPlugin _plugin;
-        
-        if (pluginFacet.hasPlugin(confluencePluginDep)) {
+		final DependencyBuilder confluencePluginDep = DependencyBuilder
+				.create(PLUGIN_KEY_3);
 
-            prompt.printlnVerbose("Plugin already exist!");
-            _plugin = pluginFacet.getPlugin(confluencePluginDep);
+		final MavenPluginFacet pluginFacet = project
+				.getFacet(MavenPluginFacet.class);
 
-        }
-        else {
-        	_plugin = null;
-        }
+		final MavenPlugin _plugin;
+		final MavenPluginBuilder pb;
+		final ConfigurationBuilder cb;
 
-            final MavenPluginBuilder pb
-                    =  MavenPluginBuilder.create() 
-                      .setDependency(confluencePluginDep)  
-                    ;
-            final ConfigurationBuilder cb = pb.createConfiguration();
-            
-            // SET CONFIGURATION
-            cb.createConfigurationElement("serverId")
-            .setText(inputConfigElement("Please, give me the serverId for access to confluence", null))
-            .getParentPluginConfig()
-            .createConfigurationElement("endPoint")
-                    .setText(inputConfigElement("Please, give me the confluence's 'URL'", new F<String, String>() {
-                        @Override
-                        public String f(String param) {
-                                          
-                            if( param.trim().endsWith("/")) {
-                                param = param.substring(0, param.length()-1);
-                            }
-                            
-                            setMavenProjectProperty(project, "confluence.home", param );
+		if (pluginFacet.hasPlugin(confluencePluginDep)) {
 
-                            return "${confluence.home}/rpc/xmlrpc";
-                        }
-                    })
-            )
-            .getParentPluginConfig()
-            .createConfigurationElement("spaceKey")
-                    .setText(inputConfigElement("Please, give me the confluence's 'SPACE KEY'", null))
-            .getParentPluginConfig()
-                 .createConfigurationElement("parentPageTitle")
-                    .setText(inputConfigElement("Please, give me the confluence's 'PARENT PAGE NAME'", "Home", null))
-            .getParentPluginConfig()
-                .createConfigurationElement("wikiFilesExt")
-                    .setText(".confluence")
-            .getParentPluginConfig()
-             .createConfigurationElement("properties")
-                        ;
-            
-            pb.setConfiguration(cb);
+			_plugin = pluginFacet.getPlugin(confluencePluginDep);
+			pb = MavenPluginBuilder.create(_plugin);
+			cb = ConfigurationBuilder.create(_plugin.getConfig(), pb);
 
-            if( _plugin == null ) {
-            	pluginFacet.addPlugin(pb);
-            }
-            else {
-            	pluginFacet.updatePlugin( pluginFacet.merge(pb, _plugin) );
-            }
-            
-    }
+		} else {
+			_plugin = null;
+			pb = MavenPluginBuilder.create().setDependency(confluencePluginDep);
+			cb = ConfigurationBuilder.create(pb);
+		}
 
-    private void printVerbose(Throwable t) {
+		final F<ConfigurationElement, String> _getter = new F<ConfigurationElement, String>() {
+			@Override
+			public String f(ConfigurationElement param) {
+				return param.getText();
+			}
+		};
 
-        java.io.StringWriter sw = new java.io.StringWriter(4096);
-        java.io.PrintWriter w = new java.io.PrintWriter(sw);
-        t.printStackTrace(w);
+		final ShellPromptBuilder<String> spsb = new ShellPromptStringBuilder()
+				.setInterruptMessage(MSG_SETUP_INTERRUPTED);
 
-        prompt.printlnVerbose(ShellColor.RED, sw.toString());
-    }
+		{
+			final ConfigurationElementBuilder _elem = getOrCreateConfigurationElement(
+					cb, CFGELEM_SERVERID);
 
-    private String inputConfigElement(String msg, String defaultValue, F<String, String> functor) {
+			_elem.setText(new ShellPromptServersBuilder(getSettings())
+					.setGetter(_getter)
+					.setMessage(
+							"Please, give me the serverId for access to confluence")
+					.input(prompt, _elem));
 
-        String value = prompt.prompt(String.format("%s. Press enter for default '%s': ", msg, defaultValue), defaultValue);
+		}
+		{
+			final ConfigurationElementBuilder _elem = MavenHelper
+					.getOrCreateConfigurationElement(cb, CFGELEM_ENDPOINT);
 
-        if (functor != null) {
-            value = functor.f(value);
-        }
+			_elem.setText(spsb
+					.setMessage("Please, give me the confluence's 'URL'")
+					.setGetter(new F<ConfigurationElementBuilder, String>() {
 
-        if (value == null || value.isEmpty()) {
-            prompt.println(MSG_SETUP_INTERRUPTED);
-            throw new AbortedException(MSG_SETUP_INTERRUPTED);
-        }
+						@Override
+						public String f(ConfigurationElementBuilder param) {
 
-        return value;
-    }
+							String result = mProject.getProperties()
+									.getProperty(PROP_CONFLUENCE_HOME);
 
-    private String inputConfigElement(String msg, F<String, String> functor) {
+							if (result == null) {
+								result = param.getText();
+							}
+							return result;
+						}
+					}).setTransformer(new F<String, String>() {
+						@Override
+						public String f(String param) {
 
-        String value = prompt.prompt(String.format("%s. Press enter to abort: ", msg));
-        if (functor != null) {
-            value = functor.f(value);
-        }
+							if (param.trim().endsWith("/")) {
+								param = param.substring(0, param.length() - 1);
+							}
 
-        if (value == null || value.isEmpty()) {
-            prompt.println(MSG_SETUP_INTERRUPTED);
-            throw new AbortedException(MSG_SETUP_INTERRUPTED);
-        }
+							setMavenProjectProperty(project,
+									PROP_CONFLUENCE_HOME, param);
 
+							return String.format("${%s}/rpc/xmlrpc",
+									PROP_CONFLUENCE_HOME);
+						}
+					}).input(prompt, _elem));
 
-        return value;
-    }
+		}
+		{
+			final ConfigurationElementBuilder _elem = getOrCreateConfigurationElement(
+					cb, CFGELEM_SPACEKEY);
+
+			_elem.setText(spsb.setGetter(_getter)
+					.setMessage("Please, give me the confluence's 'SPACE KEY'")
+					.input(prompt, _elem));
+		}
+		{
+			final ConfigurationElementBuilder _elem = getOrCreateConfigurationElement(
+					cb, CFGELEM_PARENTPAGETITLE);
+
+			_elem.setText(spsb
+					.setGetter(_getter)
+					.setMessage(
+							"Please, give me the confluence's 'PARENT PAGE NAME'")
+					.setDefaultValue("Home").input(prompt, _elem));
+		}
+
+		getOrCreateConfigurationElement(cb, "wikiFilesExt").setText(
+				".confluence");
+		getOrCreateConfigurationElement(cb, "properties");
+
+		pb.setConfiguration(cb);
+
+		if (_plugin != null) {
+			pluginFacet.updatePlugin(pb);
+		} else {
+			pluginFacet.addPlugin(pb);
+
+		}
+
+	}
+
+	private void printVerbose(Throwable t) {
+
+		java.io.StringWriter sw = new java.io.StringWriter(4096);
+		java.io.PrintWriter w = new java.io.PrintWriter(sw);
+		t.printStackTrace(w);
+
+		prompt.printlnVerbose(ShellColor.RED, sw.toString());
+	}
 
 }

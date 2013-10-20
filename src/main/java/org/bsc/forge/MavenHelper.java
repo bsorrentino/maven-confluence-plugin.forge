@@ -6,23 +6,64 @@
 
 package org.bsc.forge;
 
+import java.io.File;
+
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
+import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuilder;
+import org.apache.maven.settings.building.SettingsBuildingException;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.jboss.forge.maven.MavenCoreFacet;
+import org.jboss.forge.maven.plugins.ConfigurationBuilder;
+import org.jboss.forge.maven.plugins.ConfigurationElementBuilder;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.ProjectModelException;
+import org.jboss.forge.shell.util.OSUtils;
 
 /**
  *
  * @author softphone
  */
-public class MavenUtil {
-    
-    public interface F<P,R> {
-        
-        R f( P param );
-    };
-    
+public class MavenHelper {
+	
+	private static final String M2_HOME = System.getenv().get("M2_HOME");
+   
+	/**
+	 * 
+	 * @return
+	 */
+	public static  Settings getSettings()
+	   {
+	      try
+	      {
+	         SettingsBuilder settingsBuilder = new DefaultSettingsBuilderFactory().newInstance();
+	         SettingsBuildingRequest settingsRequest = new DefaultSettingsBuildingRequest();
+	         settingsRequest
+	                  .setUserSettingsFile(new File(OSUtils.getUserHomeDir().getAbsolutePath() + "/.m2/settings.xml"));
+
+	         if (M2_HOME != null)
+	            settingsRequest.setGlobalSettingsFile(new File(M2_HOME + "/conf/settings.xml"));
+
+	         SettingsBuildingResult settingsBuildingResult = settingsBuilder.build(settingsRequest);
+	         Settings effectiveSettings = settingsBuildingResult.getEffectiveSettings();
+
+	         if (effectiveSettings.getLocalRepository() == null)
+	         {
+	            effectiveSettings.setLocalRepository(OSUtils.getUserHomeDir().getAbsolutePath() + "/.m2/repository");
+	         }
+
+	         return effectiveSettings;
+	      }
+	      catch (SettingsBuildingException e)
+	      {
+	         throw new ProjectModelException(e);
+	      }
+	   }    
     /**
      *
      * @param project
@@ -41,6 +82,19 @@ public class MavenUtil {
         }
         
         return null;
+    }
+    
+    /**
+     * 
+     * @param conf
+     * @param id
+     * @return
+     */
+    public static ConfigurationElementBuilder getOrCreateConfigurationElement( ConfigurationBuilder cb, String id ) {
+    	
+    	return (ConfigurationElementBuilder) (( cb.hasConfigurationElement(id) ) ? 
+    			cb.getConfigurationElement(id) :
+    			cb.createConfigurationElement(id));
     }
     
     /**
@@ -80,7 +134,7 @@ public class MavenUtil {
         
         
     }
-    
+   
     /**
      * add or update property 
      * 
