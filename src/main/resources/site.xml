@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<site
+<bsc:site
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xmlns='http://code.google.com/p/maven-confluence-plugin'
+    xmlns:bsc='http://code.google.com/p/maven-confluence-plugin'
     xsi:schemaLocation='http://code.google.com/p/maven-confluence-plugin http://maven-confluence-plugin.googlecode.com/files/site-schema-3.4.0.xsd'>
     
     
-    <home  name="home.confluence">
+    <home  uri="home.confluence">
         
 <!--   ATTACHMENT(S)
      
@@ -40,4 +40,4 @@
 <!--    
     <label>label_site</label>
 -->    
-</site>
+</bsc:site>
