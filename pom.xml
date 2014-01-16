@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bsc</groupId>
   <artifactId>confluence-forge-plugin</artifactId>
   <version>1.2-SNAPSHOT</version>
   <name>Confluence::Forge plugin - ${project.version}</name>
-
-  
-<scm>
-<connection>scm:git:https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge/</connection>
-<developerConnection>scm:git:https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge/</developerConnection>
-<url>https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge//</url>
-  <tag>HEAD</tag>
+  <inceptionYear>2013</inceptionYear>
+  <developers>
+    <developer>
+      <name>Bartolomeo Sorrentino</name>
+      <email>bartolomeo.sorrentino@gmail.com</email>
+      <roles>
+        <role>Owner</role>
+      </roles>
+      <timezone>GMT+1</timezone>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge/</connection>
+    <developerConnection>scm:git:https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge/</developerConnection>
+    <url>https://bartolomeo.sorrentino@code.google.com/p/maven-confluence-plugin.forge//</url>
   </scm>
-
-<inceptionYear>2013</inceptionYear>
-
-<developers>
-	<developer>
-		<email>bartolomeo.sorrentino@gmail.com</email>
-		<name>Bartolomeo Sorrentino</name>
-		<timezone>GMT+1</timezone>
-		<roles>
-			<role>Owner</role>
-		</roles>
-	</developer>
-</developers>
-  
   <properties>
     <forge.api.version>1.4.0.Final</forge.api.version>
   </properties>
-  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -87,19 +81,22 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.bsc.util</groupId>
-      <artifactId>minitemplator-repackaged</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-maven-api</artifactId>
       <version>1.4.1.Final</version>
       <scope>provided</scope>
     </dependency>
-    
-  <!-- MAVEN  -->
-  	  
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-project-model-maven</artifactId>
+      <version>1.4.3.Final</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bsc.maven</groupId>
+      <artifactId>maven-confluence-core</artifactId>
+      <version>3.4.3</version>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
