@@ -5,7 +5,7 @@
   <groupId>org.bsc</groupId>
   <artifactId>confluence-forge-plugin</artifactId>
   <version>1.2-SNAPSHOT</version>
-  <name>Confluence::Forge plugin - ${project.version}</name>
+  <name>CONFLUENCE::Forge plugin - ${project.version}</name>
   <inceptionYear>2013</inceptionYear>
   <developers>
     <developer>
