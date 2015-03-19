@@ -1,5 +1,5 @@
 
-# confluence-forge-plugin (a [Forge2](http://forge.jboss.org/) Addon)
+## confluence-forge-plugin (a [Forge2](http://forge.jboss.org/) Addon)
 
 [Forge2](http://forge.jboss.org/) Addon to work with [confluence-maven-plugin](https://code.google.com/p/maven-confluence-plugin/)
 
@@ -11,8 +11,8 @@ Support Forge 2.10.1
 
 ## Install from eclipse
 
-<img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-1.png">
-<img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-2.png">
+<img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-1.png">
+<img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-2.png">
 
 ## Goals
 
@@ -22,11 +22,11 @@ Support Forge 2.10.1
 >
 > ### Select goal
 >
-> <img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-3.png">
+> <img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-3.png">
 >
 > ### Configure goal
 >
-> <img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-5.png">
+> <img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-5.png">
 
 
 
@@ -36,9 +36,9 @@ Support Forge 2.10.1
 >
 > ### Select goal
 >
-> <img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-4.png">
+> <img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-4.png">
 >
 >
 > ### Configure goal
 >
-> <img src="https://raw.github.com/bsorrentino/maven-confluence-reporting-plugin/v4/confluence-forge-plugin/src/site/install-addon-6.png">
+> <img src="https://raw.github.com/bsorrentino/maven-confluence-plugin.forge/master/src/site/install-addon-6.png">
