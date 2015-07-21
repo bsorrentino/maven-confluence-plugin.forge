@@ -191,8 +191,10 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 			if (activeProxy != null) {
 
 				proxyInfo = new Confluence.ProxyInfo(activeProxy.getHost(),
-						activeProxy.getPort(), activeProxy.getUsername(),
-						activeProxy.getPassword());
+						activeProxy.getPort(), 
+                                                activeProxy.getUsername(),
+						activeProxy.getPassword(), 
+                                                activeProxy.getNonProxyHosts());
 			}
 
 			confluence = ConfluenceFactory.createInstanceDetectingVersion(
