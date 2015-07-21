@@ -1,0 +1,54 @@
+## Maven Confluence Plugin Addon
+
+===============================
+Addon that allow to setup use of https://github.com/bsorrentino/maven-confluence-plugin[maven confluence plugin] in your project
+
+Support Forge version *2.16.2.Final*
+
+===============================
+
+### Available Commands
+
+[options="header",cols="<m,<",width="60%"]
+|=======================
+| Command       | Description
+| setup       | Update your POM to use https://github.com/bsorrentino/maven-confluence-plugin[maven confluence plugin]
+| DownloadPage | Allow to download a Confluence's Page (ie. source wiki)
+|=======================
+
+### > confluence-setup
+====
+Update your POM to use https://github.com/bsorrentino/maven-confluence-plugin[maven confluence plugin]
+====
+
+#### Parameters
+
+[options="header",cols="<m,<",width="60%"]
+|=======================
+| param        | Description
+| --script      |
+| --serverIds  |
+| --endPoint  |
+| --spaceKey |
+| --parentPageTitle |
+|=======================
+
+### > confluence-downloadpage
+====
+Allow to download a Confluence's Page (ie. source wiki)
+====
+
+#### Parameters
+[options="header",cols="<m,<",width="60%"]
+|=======================
+| param        | Description
+| --script      |
+| --username |
+| --password |
+| --target |
+| --title |
+|=======================
+
+### Install
+
+` > forge --install org.bsc.maven:confluence-forge-plugin,4.3
