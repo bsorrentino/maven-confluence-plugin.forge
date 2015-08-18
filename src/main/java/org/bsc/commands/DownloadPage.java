@@ -55,9 +55,9 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 
 	@Inject
 	ResourceFactory resourceFactory;
-	
+
 	private final CoordinateBuilder confluencePluginDep = CoordinateBuilder.create(PLUGIN_KEY_3);
-	
+
 	@Override
 	protected boolean isProjectRequired() {
 		return true;
@@ -79,11 +79,11 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 	public void initializeUI(UIBuilder builder) throws Exception {
 		final Project project = Projects.getSelectedProject(getProjectFactory(),
 				builder.getUIContext());
-		
+
 		DirectoryResource ds = (DirectoryResource) project.getRoot();
-		
+
 		DirectoryResource siteDir = ds.getChildDirectory("src/site/confluence");
-		
+
 		target.setDefaultValue(siteDir.exists() ? siteDir : ds );
 
 		final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
@@ -92,7 +92,7 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 			final MavenPlugin plugin = pluginFacet.getPlugin(confluencePluginDep);
 
 			final Configuration conf = plugin.getConfig();
-			
+
 			if( conf.hasConfigurationElement("title") ) {
 				title.setDefaultValue( conf.getConfigurationElement("title").getText() );
 			}
@@ -108,7 +108,7 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 
 	@Override
 	public Result execute(UIExecutionContext context) {
-		
+
 		final UIPrompt prompt = context.getPrompt();
 		final PrintStream out = context.getUIContext().getProvider().getOutput().out();
 
@@ -133,9 +133,15 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 				.getText();
 
 		try {
-			confluenceExecute(facet.resolveProperties(endPoint), 
+			final SSLCertificateInfo ssl = new SSLCertificateInfo();
+
+			final String resolvedEndpoint = facet.resolveProperties(endPoint);
+			//out.printf( "SSL SETUP endpoint=[%s]\n", resolvedEndpoint);
+			ssl.setup(resolvedEndpoint);
+
+			confluenceExecute(resolvedEndpoint,
 								username.getValue(),
-								password.getValue(), 
+								password.getValue(),
 					new Fe<Confluence, Void>() {
 
 						@Override
@@ -143,14 +149,14 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 
 							final Page page = c.getPage(space, title.getValue());
 
-							final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title );
+							final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue() );
 
 							FileResource<?> file =  (FileResource<?>) resourceFactory.create( new java.io.File(targetPath) );
-							
+
 							if( !file.exists() ) {
-								
+
 								if(!file.createNewFile()) {
-									
+
 									throw new Exception( String.format("error creating file [%s]", file.getName()) );
 								}
 							}
@@ -164,13 +170,13 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 		} catch (Exception e) {
 			return Results.fail("error!", e);
 		}
-		
+
 		return Results.success("completed!");
 
 	}
 
 	/**
-	 * 
+	 *
 	 * @param endpoint
 	 * @param username
 	 * @param password
@@ -191,9 +197,9 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 			if (activeProxy != null) {
 
 				proxyInfo = new Confluence.ProxyInfo(activeProxy.getHost(),
-						activeProxy.getPort(), 
+						activeProxy.getPort(),
                                                 activeProxy.getUsername(),
-						activeProxy.getPassword(), 
+						activeProxy.getPassword(),
                                                 activeProxy.getNonProxyHosts());
 			}
 
@@ -217,7 +223,7 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param confluence
 	 */
 	private void confluenceLogout(Confluence confluence) {
