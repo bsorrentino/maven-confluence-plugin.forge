@@ -4,10 +4,10 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>4.3</version>
+    <version>4.4</version>
   </parent>
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>4.3.1</version>
+  <version>4.4</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -152,6 +152,20 @@
           </execution>
         </executions>
       </plugin>
+         <!--
+            jgitflow:feature-start Starts a feature branch
+            jgitflow:feature-finish Finishes a feature branch
+            jgitflow:release-start Starts a release
+            jgitflow:release-finish Finishes a release
+            jgitflow:hotfix-start Starts a hotfix
+            jgitflow:hotfix-finish Finishes a hotfix
+            jgitflow:build-number Updates the pom versions in the current branch by adding a build number label
+        -->
+        <plugin>
+           <groupId>external.atlassian.jgitflow</groupId>
+           <artifactId>jgitflow-maven-plugin</artifactId>
+       </plugin>
+     
     </plugins>
   </build>
   <name>CONFLUENCE-REPORTING::Forge - ${project.version}</name>
