@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>4.3</version>
+    <version>4.4</version>
   </parent>
   <artifactId>confluence-forge-plugin</artifactId>
   <version>4.4</version>
@@ -164,10 +164,6 @@
         <plugin>
            <groupId>external.atlassian.jgitflow</groupId>
            <artifactId>jgitflow-maven-plugin</artifactId>
-           <version>1.0-m5.1</version>
-           <configuration>
-             <versionTagPrefix>v</versionTagPrefix>
-           </configuration>
        </plugin>
      
     </plugins>

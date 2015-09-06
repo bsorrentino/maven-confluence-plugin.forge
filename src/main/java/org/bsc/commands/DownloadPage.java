@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import org.apache.maven.settings.Proxy;
 import org.bsc.core.Fe;
 import org.bsc.core.MavenHelper;
+import org.bsc.ssl.SSLCertificateInfo;
 import org.codehaus.swizzle.confluence.Confluence;
 import org.codehaus.swizzle.confluence.ConfluenceFactory;
 import org.codehaus.swizzle.confluence.Page;
@@ -37,209 +38,209 @@ import org.jboss.forge.addon.ui.util.Metadata;
 
 public class DownloadPage extends AbstractProjectCommand implements Constants {
 
-	@Inject @WithAttributes(label = "Username", required = true )
-	UIInput<String> username;
+    @Inject
+    @WithAttributes(label = "Username", required = true)
+    UIInput<String> username;
 
-	@Inject @WithAttributes(label = "Password", required = true, type = InputType.SECRET )
-	UIInput<String> password;
+    @Inject
+    @WithAttributes(label = "Password", required = true, type = InputType.SECRET)
+    UIInput<String> password;
 
-	@Inject
-	@WithAttributes(label = "Target", required = true, type = InputType.DIRECTORY_PICKER)
-	private UIInput<DirectoryResource> target;
+    @Inject
+    @WithAttributes(label = "Target", required = true, type = InputType.DIRECTORY_PICKER)
+    private UIInput<DirectoryResource> target;
 
-	@Inject @WithAttributes(label = "Title", required = true )
-	UIInput<String> title;
+    @Inject
+    @WithAttributes(label = "Title", required = true)
+    UIInput<String> title;
 
-	@Inject
-	ProjectFactory projectFactory;
+    @Inject
+    ProjectFactory projectFactory;
 
-	@Inject
-	ResourceFactory resourceFactory;
+    @Inject
+    ResourceFactory resourceFactory;
 
-	private final CoordinateBuilder confluencePluginDep = CoordinateBuilder.create(PLUGIN_KEY_3);
+    private final CoordinateBuilder confluencePluginDep = CoordinateBuilder.create(PLUGIN_KEY_3);
 
-	@Override
-	protected boolean isProjectRequired() {
-		return true;
-	}
+    @Override
+    protected boolean isProjectRequired() {
+        return true;
+    }
 
-	@Override
-	protected ProjectFactory getProjectFactory() {
-		return projectFactory;
-	}
+    @Override
+    protected ProjectFactory getProjectFactory() {
+        return projectFactory;
+    }
 
-	@Override
-	public UICommandMetadata getMetadata(UIContext context) {
-		return Metadata.forCommand(DownloadPage.class)
-				.name("confluence-downloadPage")
-				.category(Categories.create("Confluence"));
-	}
+    @Override
+    public UICommandMetadata getMetadata(UIContext context) {
+        return Metadata.forCommand(DownloadPage.class)
+                .name("confluence-downloadPage")
+                .category(Categories.create("Confluence"));
+    }
 
-	@Override
-	public void initializeUI(UIBuilder builder) throws Exception {
-		final Project project = Projects.getSelectedProject(getProjectFactory(),
-				builder.getUIContext());
+    @Override
+    public void initializeUI(UIBuilder builder) throws Exception {
+        final Project project = Projects.getSelectedProject(getProjectFactory(),
+                builder.getUIContext());
 
-		DirectoryResource ds = (DirectoryResource) project.getRoot();
+        DirectoryResource ds = (DirectoryResource) project.getRoot();
 
-		DirectoryResource siteDir = ds.getChildDirectory("src/site/confluence");
+        DirectoryResource siteDir = ds.getChildDirectory("src/site/confluence");
 
-		target.setDefaultValue(siteDir.exists() ? siteDir : ds );
+        target.setDefaultValue(siteDir.exists() ? siteDir : ds);
 
-		final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
+        final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
 
-		if (pluginFacet.hasPlugin(confluencePluginDep)) {
-			final MavenPlugin plugin = pluginFacet.getPlugin(confluencePluginDep);
+        if (pluginFacet.hasPlugin(confluencePluginDep)) {
+            final MavenPlugin plugin = pluginFacet.getPlugin(confluencePluginDep);
 
-			final Configuration conf = plugin.getConfig();
+            final Configuration conf = plugin.getConfig();
 
-			if( conf.hasConfigurationElement("title") ) {
-				title.setDefaultValue( conf.getConfigurationElement("title").getText() );
-			}
+            if (conf.hasConfigurationElement("title")) {
+                title.setDefaultValue(conf.getConfigurationElement("title").getText());
+            }
 
-		}
+        }
 
+        builder.add(username);
+        builder.add(password);
+        builder.add(target);
+        builder.add(title);
+    }
 
-		builder.add(username);
-		builder.add(password);
-		builder.add(target);
-		builder.add(title);
-	}
+    @Override
+    public Result execute(UIExecutionContext context) {
 
-	@Override
-	public Result execute(UIExecutionContext context) {
+        final UIPrompt prompt = context.getPrompt();
+        final PrintStream out = context.getUIContext().getProvider().getOutput().out();
 
-		final UIPrompt prompt = context.getPrompt();
-		final PrintStream out = context.getUIContext().getProvider().getOutput().out();
+        final Project project = super.getSelectedProject(context);
 
-		final Project project = super.getSelectedProject(context);
+        final MavenFacet facet = project.getFacet(MavenFacet.class);
 
-		final MavenFacet facet = project.getFacet(MavenFacet.class);
+        final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
 
-		final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
+        if (!pluginFacet.hasPlugin(confluencePluginDep)) {
+            throw new IllegalStateException(String.format(
+                    "Project hasn't defined Plugin [%s]", PLUGIN_KEY_3));
+        }
 
-		if (!pluginFacet.hasPlugin(confluencePluginDep)) {
-			throw new IllegalStateException(String.format(
-					"Project hasn't defined Plugin [%s]", PLUGIN_KEY_3));
-		}
+        final MavenPlugin plugin = pluginFacet.getPlugin(confluencePluginDep);
 
-		final MavenPlugin plugin = pluginFacet.getPlugin(confluencePluginDep);
+        final Configuration conf = plugin.getConfig();
 
-		final Configuration conf = plugin.getConfig();
+        final String endPoint = conf.getConfigurationElement(CFGELEM_ENDPOINT)
+                .getText();
+        final String space = conf.getConfigurationElement(CFGELEM_SPACEKEY)
+                .getText();
 
-		final String endPoint = conf.getConfigurationElement(CFGELEM_ENDPOINT)
-				.getText();
-		final String space = conf.getConfigurationElement(CFGELEM_SPACEKEY)
-				.getText();
+        try {
+            final SSLCertificateInfo ssl = new SSLCertificateInfo();
 
-		try {
-			final SSLCertificateInfo ssl = new SSLCertificateInfo();
+            final String resolvedEndpoint = facet.resolveProperties(endPoint);
+            //out.printf( "SSL SETUP endpoint=[%s]\n", resolvedEndpoint);
+            ssl.setup(resolvedEndpoint);
 
-			final String resolvedEndpoint = facet.resolveProperties(endPoint);
-			//out.printf( "SSL SETUP endpoint=[%s]\n", resolvedEndpoint);
-			ssl.setup(resolvedEndpoint);
+            confluenceExecute(resolvedEndpoint,
+                    username.getValue(),
+                    password.getValue(),
+                    new Fe<Confluence, Void>() {
 
-			confluenceExecute(resolvedEndpoint,
-								username.getValue(),
-								password.getValue(),
-					new Fe<Confluence, Void>() {
+                        @Override
+                        public Void f(Confluence c) throws Exception {
 
-						@Override
-						public Void f(Confluence c) throws Exception {
+                            final Page page = c.getPage(space, title.getValue());
 
-							final Page page = c.getPage(space, title.getValue());
+                            final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue());
 
-							final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue() );
+                            FileResource<?> file = (FileResource<?>) resourceFactory.create(new java.io.File(targetPath));
 
-							FileResource<?> file =  (FileResource<?>) resourceFactory.create( new java.io.File(targetPath) );
+                            if (!file.exists()) {
 
-							if( !file.exists() ) {
+                                if (!file.createNewFile()) {
 
-								if(!file.createNewFile()) {
+                                    throw new Exception(String.format("error creating file [%s]", file.getName()));
+                                }
+                            }
 
-									throw new Exception( String.format("error creating file [%s]", file.getName()) );
-								}
-							}
+                            file.setContents(page.getContent());
+                            out.printf("set donloaded content to [%s]\n", file.getName());
+                            return null;
+                        }
 
-							file.setContents(page.getContent());
-							out.printf( "set donloaded content to [%s]\n", file.getName());
-							return null;
-						}
+                    });
+        } catch (Exception e) {
+            return Results.fail("error!", e);
+        }
 
-					});
-		} catch (Exception e) {
-			return Results.fail("error!", e);
-		}
+        return Results.success("completed!");
 
-		return Results.success("completed!");
+    }
 
-	}
+    /**
+     *
+     * @param endpoint
+     * @param username
+     * @param password
+     * @param task
+     */
+    protected void confluenceExecute(String endpoint, String username,
+            String password, Fe<Confluence, Void> task) throws Exception {
 
-	/**
-	 *
-	 * @param endpoint
-	 * @param username
-	 * @param password
-	 * @param task
-	 */
-	protected void confluenceExecute(String endpoint, String username,
-			String password, Fe<Confluence, Void> task) throws Exception  {
+        Confluence confluence = null;
 
-		Confluence confluence = null;
+        try {
 
-		try {
+            Confluence.ProxyInfo proxyInfo = null;
 
-			Confluence.ProxyInfo proxyInfo = null;
+            final Proxy activeProxy = MavenHelper.getSettings()
+                    .getActiveProxy();
 
-			final Proxy activeProxy = MavenHelper.getSettings()
-					.getActiveProxy();
+            if (activeProxy != null) {
 
-			if (activeProxy != null) {
+                proxyInfo = new Confluence.ProxyInfo(activeProxy.getHost(),
+                        activeProxy.getPort(),
+                        activeProxy.getUsername(),
+                        activeProxy.getPassword(),
+                        activeProxy.getNonProxyHosts());
+            }
 
-				proxyInfo = new Confluence.ProxyInfo(activeProxy.getHost(),
-						activeProxy.getPort(),
-                                                activeProxy.getUsername(),
-						activeProxy.getPassword(),
-                                                activeProxy.getNonProxyHosts());
-			}
-
-			confluence = ConfluenceFactory.createInstanceDetectingVersion(
-					endpoint, proxyInfo, username, password);
+            confluence = ConfluenceFactory.createInstanceDetectingVersion(
+                    endpoint, proxyInfo, username, password);
 
 			// getLog().info(ConfluenceUtils.getVersion(confluence));
+            task.f(confluence);
 
-			task.f(confluence);
-
-		} catch (Exception e) {
+        } catch (Exception e) {
 
 			// getLog().error("has been imposssible connect to confluence due exception",
-			// e);
+            // e);
+            throw e;
+        } finally {
+            confluenceLogout(confluence);
+        }
 
-			throw e;
-		} finally {
-			confluenceLogout(confluence);
-		}
+    }
 
-	}
+    /**
+     *
+     * @param confluence
+     */
+    private void confluenceLogout(Confluence confluence) {
 
-	/**
-	 *
-	 * @param confluence
-	 */
-	private void confluenceLogout(Confluence confluence) {
+        if (null == confluence) {
+            return;
+        }
 
-		if (null == confluence) {
-			return;
-		}
+        try {
+            if (!confluence.logout()) {
+                // getLog().warn("confluence logout has failed!");
+            }
+        } catch (Exception e) {
+            // getLog().warn("confluence logout has failed due exception ", e);
+        }
 
-		try {
-			if (!confluence.logout()) {
-				// getLog().warn("confluence logout has failed!");
-			}
-		} catch (Exception e) {
-			// getLog().warn("confluence logout has failed due exception ", e);
-		}
-
-	}
+    }
 
 }
