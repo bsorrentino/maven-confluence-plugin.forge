@@ -4,10 +4,10 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>4.4</version>
+    <version>4.4.1-SNAPSHOT</version>
   </parent>
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>4.5-SNAPSHOT</version>
+  <version>4.4.1-SNAPSHOT</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -165,7 +165,7 @@
            <groupId>external.atlassian.jgitflow</groupId>
            <artifactId>jgitflow-maven-plugin</artifactId>
        </plugin>
-     
+
     </plugins>
   </build>
   <name>CONFLUENCE-REPORTING::Forge - ${project.version}</name>
