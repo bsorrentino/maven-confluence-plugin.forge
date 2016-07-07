@@ -7,8 +7,8 @@
     <version>4.10</version>
   </parent>
   <artifactId>confluence-forge-plugin</artifactId>
-<<<version>4.10</version>
->><url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
+<version>4.10</version>
+<url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
