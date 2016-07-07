@@ -4,10 +4,10 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>4.6</version>
+    <version>4.10</version>
   </parent>
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>4.6</version>
+  <version>4.11</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -151,6 +151,14 @@
         <plugin>
            <groupId>external.atlassian.jgitflow</groupId>
            <artifactId>jgitflow-maven-plugin</artifactId>
+           <configuration>
+               <flowInitContext>
+                   <versionTagPrefix>v</versionTagPrefix>
+               </flowInitContext>
+               <!-- see goals wiki page for configuration options -->
+               <noDeploy>true</noDeploy>
+           </configuration>
+
        </plugin>
 
     </plugins>
