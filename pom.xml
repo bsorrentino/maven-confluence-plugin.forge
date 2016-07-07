@@ -151,6 +151,14 @@
         <plugin>
            <groupId>external.atlassian.jgitflow</groupId>
            <artifactId>jgitflow-maven-plugin</artifactId>
+           <configuration>
+               <flowInitContext>
+                   <versionTagPrefix>v</versionTagPrefix>
+               </flowInitContext>
+               <!-- see goals wiki page for configuration options -->
+               <noDeploy>true</noDeploy>
+           </configuration>
+
        </plugin>
 
     </plugins>
