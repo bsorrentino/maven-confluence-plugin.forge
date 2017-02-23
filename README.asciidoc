@@ -3,7 +3,7 @@
 ===============================
 Addon that allow to setup use of https://github.com/bsorrentino/maven-confluence-plugin[maven confluence plugin] in your project
 
-Support Forge version *2.16.2.Final*
+Support Forge version *3.5.1.Final*
 
 ===============================
 
@@ -51,4 +51,4 @@ Allow to download a Confluence's Page (ie. source wiki)
 
 ### Install
 
-` > forge --install org.bsc.maven:confluence-forge-plugin,4.4
+` > forge --install org.bsc.maven:confluence-forge-plugin,5.0
