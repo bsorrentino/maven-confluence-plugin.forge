@@ -6,6 +6,11 @@
     <artifactId>maven-confluence-parent</artifactId>
     <version>4.10</version>
   </parent>
+	<properties>
+    		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+	
   <artifactId>confluence-forge-plugin</artifactId>
   <version>5.0</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
