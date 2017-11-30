@@ -5,7 +5,7 @@
 
 ## Install from command line interface
 
-`` > forge --install org.bsc.maven:confluence-forge-plugin,5.0``
+` forge --install org.bsc.maven:confluence-forge-plugin,5.1`
 
 Support Forge *3.5.1.Final*
 
