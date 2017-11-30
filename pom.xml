@@ -4,15 +4,20 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>4.10</version>
+    <version>4.13</version>
   </parent>
+
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>5.0</version>
+  <version>5.1</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>    
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.furnace>2.25.2.Final</version.furnace>
     <version.forge>3.5.1.Final</version.forge>
   </properties>
@@ -26,14 +31,14 @@
 
   <dependencyManagement>
       <dependencies>
-        
+
           <dependency>
               <groupId>org.bsc.maven</groupId>
               <artifactId>maven-confluence-core</artifactId>
               <version>${project.parent.version}</version>
           </dependency>
 
-          <!-- JBOSS FORGE -->		
+          <!-- JBOSS FORGE -->
           <dependency>
               <groupId>org.jboss.forge</groupId>
               <artifactId>forge-bom</artifactId>
@@ -49,11 +54,11 @@
               <type>pom</type>
               <scope>import</scope>
           </dependency>
-          
+
       </dependencies>
-    
+
   </dependencyManagement>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.jboss.forge.furnace.container</groupId>
@@ -108,7 +113,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.6.1</version>
       </plugin>
-      
+
       <plugin>
         <groupId>org.jboss.forge.furnace</groupId>
         <artifactId>furnace-maven-plugin</artifactId>
