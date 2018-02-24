@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>5.1.1-SNAPSHOT</version>
+  <version>5.1.1</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
 
