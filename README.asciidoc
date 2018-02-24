@@ -51,4 +51,4 @@ Allow to download a Confluence's Page (ie. source wiki)
 
 ### Install
 
-forge --install org.bsc.maven:confluence-forge-plugin,5.1
+forge --install org.bsc.maven:confluence-forge-plugin,5.1.1
