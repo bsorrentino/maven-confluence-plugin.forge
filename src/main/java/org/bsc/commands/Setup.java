@@ -6,8 +6,6 @@ import static org.bsc.core.MavenHelper.setMavenProjectProperty;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -26,7 +24,6 @@ import org.jboss.forge.addon.maven.projects.MavenPluginFacet;
 import org.jboss.forge.addon.projects.Project;
 import org.jboss.forge.addon.projects.ProjectFactory;
 import org.jboss.forge.addon.projects.Projects;
-import org.jboss.forge.addon.projects.ui.AbstractProjectCommand;
 import org.jboss.forge.addon.ui.context.UIBuilder;
 import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
@@ -40,7 +37,7 @@ import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 
-public class Setup extends AbstractProjectCommand implements Constants
+public class Setup extends AbstractCommand implements Constants
 {
 
 	@Inject @WithAttributes(label = "ServerId", required = true )
@@ -56,7 +53,7 @@ public class Setup extends AbstractProjectCommand implements Constants
 	UIInput<String> parentPageTitle;
 	
 	@Inject ProjectFactory projectFactory;
-	
+
    @Override
    public UICommandMetadata getMetadata(UIContext context)
    {
@@ -67,7 +64,8 @@ public class Setup extends AbstractProjectCommand implements Constants
    @Override
    public void initializeUI(UIBuilder builder) throws Exception
    {
-	   
+	   printBuildInfos(builder);
+	    
 		final java.util.List<Server> serverList = MavenHelper.getSettings().getServers();
 		
 		//Collections.sort(serverList);
@@ -183,9 +181,6 @@ public class Setup extends AbstractProjectCommand implements Constants
 
 			out.println(
 					"error copying home page template ....! Set VERBOSE for details");
-
-			Logger.getLogger(Setup.class.getName()).log(
-					Level.SEVERE, null, ex);
 		}
 		try {
 			final java.io.File f = new java.io.File(siteDirFile, "site.xml");
@@ -202,19 +197,16 @@ public class Setup extends AbstractProjectCommand implements Constants
 
 			out.println(
 					"error copying site template ....! Set VERBOSE for details");
-
-			Logger.getLogger(Setup.class.getName()).log(
-					Level.SEVERE, null, ex);
 		}
 
-		updateOrCreateConfluenceMavenPlugin(project, mProject);
+		updateOrCreateConfluenceMavenPlugin(context, project, mProject);
 	   
       return Results.success("completed!");
    }
    
-	private void updateOrCreateConfluenceMavenPlugin(final Project project, final Model mProject) {
+	private void updateOrCreateConfluenceMavenPlugin(final UIExecutionContext context, final Project project, final Model mProject) {
 
-		final CoordinateBuilder confluencePluginDep = CoordinateBuilder.create(PLUGIN_KEY_3);
+		final CoordinateBuilder confluencePluginDep = getConfluencePluginDependency(context);
 
 		final MavenPluginFacet pluginFacet = project.getFacet(MavenPluginFacet.class);
 
@@ -285,5 +277,7 @@ public class Setup extends AbstractProjectCommand implements Constants
 
 		}
 	}
-  
+	
+	
+
 }
