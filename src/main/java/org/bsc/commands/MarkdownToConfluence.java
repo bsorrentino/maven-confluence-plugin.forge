@@ -1,10 +1,12 @@
 package org.bsc.commands;
 
+import static java.lang.String.format;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import javax.inject.Inject;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.bsc.markdown.ToConfluenceSerializer;
@@ -18,20 +20,19 @@ import org.jboss.forge.addon.ui.input.UIInput;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.metadata.WithAttributes;
 import org.jboss.forge.addon.ui.output.UIOutput;
-import org.jboss.forge.addon.ui.util.Metadata;
-import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
+import org.jboss.forge.addon.ui.util.Categories;
+import org.jboss.forge.addon.ui.util.Metadata;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.ast.Node;
 import org.pegdown.ast.RootNode;
-import static java.lang.String.format;
 
 public class MarkdownToConfluence extends AbstractUICommand {
 
     @Inject
     @WithAttributes(label = "source", required = true, type = InputType.FILE_PICKER)
-    private UIInput<FileResource> source;
+    private UIInput<FileResource<?>> source;
 
     @Override
     public UICommandMetadata getMetadata(UIContext context) {
@@ -50,7 +51,7 @@ public class MarkdownToConfluence extends AbstractUICommand {
     public Result execute(UIExecutionContext context) throws Exception {
         final UIOutput output = context.getUIContext().getProvider().getOutput();
         
-        final FileResource sourceFR = source.getValue();
+        final FileResource<?> sourceFR = source.getValue();
         
         final Path path = Paths.get(sourceFR.getFullyQualifiedName());
         

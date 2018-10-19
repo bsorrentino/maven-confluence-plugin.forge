@@ -2,16 +2,16 @@ package org.bsc.commands;
 
 import java.io.PrintStream;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
 import org.apache.maven.settings.Proxy;
-import org.bsc.core.Fe;
+import org.bsc.confluence.ConfluenceProxy;
+import org.bsc.confluence.ConfluenceService;
+import org.bsc.confluence.ConfluenceServiceFactory;
 import org.bsc.core.MavenHelper;
 import org.bsc.ssl.SSLCertificateInfo;
-import org.codehaus.swizzle.confluence.Confluence;
-import org.codehaus.swizzle.confluence.ConfluenceFactory;
-import org.codehaus.swizzle.confluence.Page;
 import org.jboss.forge.addon.dependencies.DependencyResolver;
 import org.jboss.forge.addon.dependencies.builder.CoordinateBuilder;
 import org.jboss.forge.addon.dependencies.builder.DependencyQueryBuilder;
@@ -38,7 +38,7 @@ import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
 
-public class DownloadPage extends AbstractCommand  {
+public class DownloadPage extends AbstractCommand implements Constants {
 
     @Inject
     @WithAttributes(label = "Username", required = true)
@@ -145,38 +145,46 @@ public class DownloadPage extends AbstractCommand  {
                 .getText();
 
         try {
+            final ConfluenceService.Credentials credentials = 
+        			new ConfluenceService.Credentials(username.getValue(), password.getValue());
+
             final SSLCertificateInfo ssl = new SSLCertificateInfo();
 
             final String resolvedEndpoint = facet.resolveProperties(endPoint);
-            //out.printf( "SSL SETUP endpoint=[%s]\n", resolvedEndpoint);
-            ssl.setup(resolvedEndpoint);
 
-            confluenceExecute(resolvedEndpoint,
-                    username.getValue(),
-                    password.getValue(),
-                    new Fe<Confluence, Void>() {
+            confluenceExecute(
+            			resolvedEndpoint,
+            			credentials, 
+            			ssl,
+                   c -> {
+                       
+                       final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue());
 
-                        @Override
-                        public Void f(Confluence c) throws Exception {
+                       final FileResource<?> file = (FileResource<?>) resourceFactory.create(new java.io.File(targetPath));
 
-                            final Page page = c.getPage(space, title.getValue());
+                       if (!file.exists()) {
 
-                            final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue());
+                           if (!file.createNewFile()) {
 
-                            FileResource<?> file = (FileResource<?>) resourceFactory.create(new java.io.File(targetPath));
+                               throw new Error(String.format("error creating file [%s]", file.getName()));
+                           }
+                       }
 
-                            if (!file.exists()) {
-
-                                if (!file.createNewFile()) {
-
-                                    throw new Exception(String.format("error creating file [%s]", file.getName()));
-                                }
+                        c.getPage(space, title.getValue()).join().ifPresent( page -> {
+                            
+                    
+                            //final String content = page.getContent();
+                            //file.setContents( content );
+                            try {
+                                final String content = String.valueOf(page.getClass().getMethod("getContent").invoke(page));
+                                file.setContents( content );
+                                out.printf("set donloaded content to [%s]\n", file.getName());
+                            } catch (Exception e) {
+                                throw new Error(e);
                             }
-
-                            file.setContents(page.getContent());
-                            out.printf("set donloaded content to [%s]\n", file.getName());
-                            return null;
-                        }
+                            
+                        });
+                        
 
                     });
         } catch (Exception e) {
@@ -194,61 +202,41 @@ public class DownloadPage extends AbstractCommand  {
      * @param password
      * @param task
      */
-    protected void confluenceExecute(String endpoint, String username,
-            String password, Fe<Confluence, Void> task) throws Exception {
+    protected void confluenceExecute(
+    			String endpoint, 
+    			ConfluenceService.Credentials credentials, 
+    			SSLCertificateInfo ssl,
+            Consumer<ConfluenceService> task) throws Exception {
 
-        Confluence confluence = null;
+        ConfluenceService confluence = null;
 
         try {
 
-            Confluence.ProxyInfo proxyInfo = null;
 
-            final Proxy activeProxy = MavenHelper.getSettings()
-                    .getActiveProxy();
+            ConfluenceProxy proxyInfo = null;
+
+            final Proxy activeProxy = MavenHelper.getSettings().getActiveProxy();
 
             if (activeProxy != null) {
 
-                proxyInfo = new Confluence.ProxyInfo(activeProxy.getHost(),
-                        activeProxy.getPort(),
-                        activeProxy.getUsername(),
-                        activeProxy.getPassword(),
-                        activeProxy.getNonProxyHosts());
+                proxyInfo = new ConfluenceProxy(
+                			activeProxy.getHost(),
+                         activeProxy.getPort(),
+                         activeProxy.getUsername(),
+                         activeProxy.getPassword(),
+                         activeProxy.getNonProxyHosts());
             }
 
-            confluence = ConfluenceFactory.createInstanceDetectingVersion(
-                    endpoint, proxyInfo, username, password);
+            confluence = ConfluenceServiceFactory.createInstance( endpoint, credentials, proxyInfo, ssl);
 
-			// getLog().info(ConfluenceUtils.getVersion(confluence));
-            task.f(confluence);
+            confluence.call( task );
 
         } catch (Exception e) {
 
 			// getLog().error("has been imposssible connect to confluence due exception",
             // e);
             throw e;
-        } finally {
-            confluenceLogout(confluence);
-        }
-
-    }
-
-    /**
-     *
-     * @param confluence
-     */
-    private void confluenceLogout(Confluence confluence) {
-
-        if (null == confluence) {
-            return;
-        }
-
-        try {
-            if (!confluence.logout()) {
-                // getLog().warn("confluence logout has failed!");
-            }
-        } catch (Exception e) {
-            // getLog().warn("confluence logout has failed due exception ", e);
-        }
+        } 
 
     }
     
