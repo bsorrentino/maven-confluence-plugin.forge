@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.bsc.maven</groupId>
     <artifactId>maven-confluence-parent</artifactId>
-    <version>5.1</version>
+    <version>6.0-rc3</version>
   </parent>
 
   <artifactId>confluence-forge-plugin</artifactId>
-  <version>5.1-SNAPSHOT</version>
+  <version>6.0-SNAPSHOT</version>
   <url>https://github.com/bsorrentino/maven-confluence-plugin.forge</url>
   <properties>
 
@@ -111,7 +111,11 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.7.0</version>
+        <configuration>
+            <source>1.8</source>
+            <target>1.8</target>      
+        </configuration>
       </plugin>
 
       <plugin>

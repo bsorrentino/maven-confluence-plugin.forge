@@ -1,14 +1,13 @@
 package org.bsc.commands;
 
 import java.io.PrintStream;
-import java.lang.reflect.Method;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
 import org.apache.maven.settings.Proxy;
 import org.bsc.confluence.ConfluenceProxy;
 import org.bsc.confluence.ConfluenceService;
-import org.bsc.confluence.ConfluenceService.Model.Page;
 import org.bsc.confluence.ConfluenceServiceFactory;
 import org.bsc.core.MavenHelper;
 import org.bsc.ssl.SSLCertificateInfo;
@@ -29,15 +28,12 @@ import org.jboss.forge.addon.ui.context.UIContext;
 import org.jboss.forge.addon.ui.context.UIExecutionContext;
 import org.jboss.forge.addon.ui.hints.InputType;
 import org.jboss.forge.addon.ui.input.UIInput;
-import org.jboss.forge.addon.ui.input.UIPrompt;
 import org.jboss.forge.addon.ui.metadata.UICommandMetadata;
 import org.jboss.forge.addon.ui.metadata.WithAttributes;
 import org.jboss.forge.addon.ui.result.Result;
 import org.jboss.forge.addon.ui.result.Results;
 import org.jboss.forge.addon.ui.util.Categories;
 import org.jboss.forge.addon.ui.util.Metadata;
-
-import rx.functions.Action1;
 
 public class DownloadPage extends AbstractProjectCommand implements Constants {
 
@@ -115,7 +111,7 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
     @Override
     public Result execute(UIExecutionContext context) {
 
-        final UIPrompt prompt = context.getPrompt();
+        //final UIPrompt prompt = context.getPrompt();
         final PrintStream out = context.getUIContext().getProvider().getOutput().out();
 
         final Project project = super.getSelectedProject(context);
@@ -150,24 +146,35 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
             			resolvedEndpoint,
             			credentials, 
             			ssl,
-                   (c) -> {
+                   c -> {
+                       
+                       final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue());
 
-                        final Page page = c.getPage(space, title.getValue());
-                        
-                        final String targetPath = String.format("%s/%s.confluence", target.getValue().getFullyQualifiedName(), title.getValue());
+                       final FileResource<?> file = (FileResource<?>) resourceFactory.create(new java.io.File(targetPath));
 
-                        FileResource<?> file = (FileResource<?>) resourceFactory.create(new java.io.File(targetPath));
+                       if (!file.exists()) {
 
-                        if (!file.exists()) {
+                           if (!file.createNewFile()) {
 
-                            if (!file.createNewFile()) {
+                               throw new Error(String.format("error creating file [%s]", file.getName()));
+                           }
+                       }
 
-                                throw new Exception(String.format("error creating file [%s]", file.getName()));
+                        c.getPage(space, title.getValue()).join().ifPresent( page -> {
+                            
+                    
+                            //final String content = page.getContent();
+                            //file.setContents( content );
+                            try {
+                                final String content = String.valueOf(page.getClass().getMethod("getContent").invoke(page));
+                                file.setContents( content );
+                                out.printf("set donloaded content to [%s]\n", file.getName());
+                            } catch (Exception e) {
+                                throw new Error(e);
                             }
-                        }
-
-                        file.setContents(page.getContent());
-                        out.printf("set donloaded content to [%s]\n", file.getName());
+                            
+                        });
+                        
 
                     });
         } catch (Exception e) {
@@ -189,7 +196,7 @@ public class DownloadPage extends AbstractProjectCommand implements Constants {
     			String endpoint, 
     			ConfluenceService.Credentials credentials, 
     			SSLCertificateInfo ssl,
-            Action1<ConfluenceService> task) throws Exception {
+            Consumer<ConfluenceService> task) throws Exception {
 
         ConfluenceService confluence = null;
 

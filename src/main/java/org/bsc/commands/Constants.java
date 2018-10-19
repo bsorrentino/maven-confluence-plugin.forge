@@ -17,7 +17,7 @@ public interface Constants {
 
 	String PLUGIN_GROUPID = "org.bsc.maven";
 	String PLUGIN_ARTIFACTID = "confluence-reporting-maven-plugin";
-	String PLUGIN_VERSION = "5.1";
+	String PLUGIN_VERSION = "6.0-rc3";
 
 	String PLUGIN_KEY_2 = PLUGIN_GROUPID + ":"
 			+ PLUGIN_ARTIFACTID;
