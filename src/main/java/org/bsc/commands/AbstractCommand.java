@@ -51,9 +51,12 @@ public abstract class AbstractCommand extends AbstractProjectCommand implements 
     		
 			final PrintStream out = context.getUIContext().getProvider().getOutput().out();
 			
+			final DependencyQueryBuilder dqb = 
+			        DependencyQueryBuilder.create( String.format("%s:%s", PLUGIN_GROUPID, PLUGIN_ARTIFACTID) );
+			dqb.setFilter( dep -> !dep.getCoordinate().isSnapshot() );
+			        
 			final java.util.List<org.jboss.forge.addon.dependencies.Coordinate> coords = 
-					dependencyResolver.resolveVersions(
-							DependencyQueryBuilder.create( String.format("%s:%s", PLUGIN_GROUPID, PLUGIN_ARTIFACTID) ));
+					dependencyResolver.resolveVersions( dqb );
 			
 			//coords.forEach( c -> out.println(c) ); out.flush();
 			
