@@ -2,9 +2,7 @@ package org.confluence.forge.plugin;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.io.FilenameUtils;
+
 import org.hamcrest.core.Is;
 import org.hamcrest.core.IsEqual;
 import org.junit.Assert;

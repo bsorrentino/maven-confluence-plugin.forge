@@ -7,7 +7,7 @@ package org.bsc.commands;
  */
 public interface Constants {
 	
-	String PROP_CONFLUENCE_HOME = "confluence.home";
+	String PROP_CONFLUENCE_ENDPOINT = "confluence.endPoint";
 	String CFGELEM_SERVERID = "serverId";
 	String CFGELEM_ENDPOINT = "endPoint";
 	String CFGELEM_SPACEKEY = "spaceKey";
@@ -17,5 +17,12 @@ public interface Constants {
 
 	String PLUGIN_GROUPID = "org.bsc.maven";
 	String PLUGIN_ARTIFACTID = "confluence-reporting-maven-plugin";
+	/*
+	String PLUGIN_VERSION = "6.0-rc3";
 
+	String PLUGIN_KEY_2 = PLUGIN_GROUPID + ":"
+			+ PLUGIN_ARTIFACTID;
+	String PLUGIN_KEY_3 = PLUGIN_GROUPID + ":"
+			+ PLUGIN_ARTIFACTID + ":" + PLUGIN_VERSION;
+    */
 }
