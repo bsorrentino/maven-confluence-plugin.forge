@@ -194,5 +194,5 @@
 
     </plugins>
   </build>
-  <name>CONFLUENCE-REPORTING::Forge - ${project.version}</name>
+  <name>CONFLUENCE-REPORTING::Forge</name>
 </project>
